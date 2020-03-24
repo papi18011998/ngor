@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Creation de compte</title>
 </head>
 <body>
 <fieldset>
@@ -24,7 +24,7 @@
    <label for="conf">Confirmer mot de passe</label>
    <input type="password" id="conf" name="conf">
    <br>
-   <button type="submit">S'inscrire</button>
+   <button type="submit" name="register">S'inscrire</button>
    <button type="reset">Vider les donnees</button>
    </form>
 </fieldset>

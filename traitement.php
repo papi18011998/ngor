@@ -1,5 +1,6 @@
 <?php
-$erreur=[];
+if (isset($_POST["register"])) {
+    $erreur=[];
 // verification du nom complet
 if(isset($_POST['name']) && !empty($_POST['name'])){
     $name = htmlspecialchars($_POST['name']);
@@ -42,16 +43,45 @@ if (!empty($erreur)) {
      $compter=$req->fetchAll();
      $res=count($compter);
     if ($res===0) { 
+       $code = random_int(1000,20000);
+       //test de l'existence du code dans la base pour eventuellement e regenerer
+       $sql="SELECT code FROM user WHERE code = ?";
+       $req = $pdo->prepare($sql);
+       $req->execute([$code]);
+       $compter=$req->fetchAll();
+       $getAll = count($compter);
+       if ($getAll=== 0) {
        $hash = hash("sha512",$passe);
-       $sql="INSERT INTO user (id,nomComplet,email,passe,tel) VALUES (NULL,?,?,?,?);";
+       $sql="INSERT INTO user (id,nomComplet,email,passe,tel,status,code) VALUES (NULL,?,?,?,?,0,?);";
        $req=$pdo->prepare($sql);
-       $req->execute([$name,$email,$hash,$tel]);
-      echo "<font color='green'>UTILISATEUR AJOUTE AVEC SUCCÈS.</font>";
-      echo $hash;
+       $req->execute([$name,$email,$hash,$tel,$code]);
+       //mail($email,'Compte',$code);
+       header("location:codeValidation.php");
+       } else {
+        $code = random_int(1000,20000); 
+        $hash = hash("sha512",$passe);
+        $sql="INSERT INTO user (id,nomComplet,email,passe,tel,status,code) VALUES (NULL,?,?,?,?,0,?);";
+        $req=$pdo->prepare($sql);
+        $req->execute([$name,$email,$hash,$tel,$code]);
+        //mail($email,'Compte',$code);
+        header("location:codeValidation.php");
+       }
     
      }else{
       echo "<font color='red'>DÉSOLÉ MAIS CET EMAIL EXISTE DÉJA DANS NOTRE BASE DE DONNEES.<br>CLIQUEZ <a href='index.php'>ICI</a> POUR RÉESSAYER UN AUTRE LOGIN</font>";
      }
 }
-
+}
+if (isset($_POST['code'])) {
+        include "bddConnect.php";
+        $sql="SELECT * FROM user WHERE code = ?";
+           $req = $pdo->prepare($sql);
+           $req->execute([$_POST['code']]);
+        if($donne = $req->fetch()){
+            $modif="UPDATE user SET status=1 WHERE code=?";
+            $reqp=$pdo->prepare($modif);
+            $reqp->execute(array($_POST['code']));
+        }
+    echo $_POST["code"];
+}
 ?>
